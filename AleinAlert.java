@@ -8,10 +8,6 @@ public class AleinAlert {
     public static void main(String[] args) throws IOException, InterruptedException{
         HttpClient client = HttpClient.newHttpClient();
 
-    //1.  Váriaveis se estão vivos ou mortos
-            int vivos = 0;
-            int mortos = 0;
-
         for (int i= 1; i< 21; i++){
         
         HttpRequest request = HttpRequest.newBuilder()
@@ -23,16 +19,13 @@ public class AleinAlert {
         // Esta linha faz o pedido HTTP e guarda a respota na variavel response
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString() );
         
-        String json=response.body().toLowerCase();{
+        String json=response.body().toLowerCase();
 
-        boolean isVivo = json.contains("\"status\":\"alive\"");
         boolean isMorto = json.contains("\"status\":\"dead\"");
 
 
-        if (isVivo) {
-            vivos++;
-        }else if (isMorto) {
-            mortos++;
+        if (isMorto) {
+
         }
         // Especie Alien e Morto
         boolean isAlien = json.contains("\"species\":\"alien\"");
@@ -46,4 +39,3 @@ public class AleinAlert {
         
         }
     }
-}

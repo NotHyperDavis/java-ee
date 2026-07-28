@@ -22,12 +22,6 @@ public class AleinAlert {
         String json=response.body().toLowerCase();
 
         boolean isMorto = json.contains("\"status\":\"dead\"");
-
-
-        if (isMorto) {
-
-        }
-        // Especie Alien e Morto
         boolean isAlien = json.contains("\"species\":\"alien\"");
 
         if (isAlien && isMorto) {

@@ -5,10 +5,13 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
+ 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
  
-public class ex1resolvido {
+public class Ex4 {
     public static void main(String[] args) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         ObjectMapper mapper = new ObjectMapper();
@@ -24,21 +27,21 @@ public class ex1resolvido {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             JsonNode jsonNode = mapper.readTree(response.body());
             String status = jsonNode.get("status").asText();
-            String url = jsonNode.get("location").get("url").asText();
+            String url = jsonNode.get("episode").get(0).asText();
  
             if (status.equals("Dead")) {
                 HttpRequest request_name = HttpRequest.newBuilder()
                         .uri(URI.create(url))
                         .GET()
                         .build();
- 
+            
                 HttpResponse<String> response_name = client.send(request_name, HttpResponse.BodyHandlers.ofString());
                 JsonNode jsonNode2 = mapper.readTree(response_name.body());
-                String name = jsonNode.get("name").asText();
-                System.out.println("[ALERTA FORENSE] O último registo do alien morto foi no episódio: " + name+ ".");
- 
+                String name = jsonNode2.get("name").asText();
+                System.out.println("[ALERTA FORENSE] O último registo do alien morto foi no episódio: " + name + ".");
             }
  
         }
     }
 }
+ 

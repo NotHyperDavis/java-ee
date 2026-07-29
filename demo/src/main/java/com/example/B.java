@@ -15,6 +15,11 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
+
 @WebServlet("/census")
 public class B extends HttpServlet {
 
@@ -28,10 +33,10 @@ public class B extends HttpServlet {
         if (showAlertsParam != null && !showAlertsParam.equals("true") && !showAlertsParam.equals("false")) {
             resp.setStatus(400);
             resp.getWriter().write("{\"status\": 400, \"error\": \"Bad Request\", \"message\": \"O parâmetro 'showAlerts' deve ser 'true' ou 'false'.\"}");
-        return;
+            return;
         }
 
-        boolean showAlerts = (showAlertsParam != null) ? 
+        boolean showAlerts = (showAlertsParam != null) ?
         Boolean.parseBoolean(showAlertsParam) : true;
 
         int vivos = 0;
@@ -49,12 +54,12 @@ public class B extends HttpServlet {
         } catch (NumberFormatException e) {
             resp.setStatus(400);
             resp.getWriter().write("{\"status\": 400, \"error\": \"Bad Request\", \"message\": \"Os parâmetros 'offset' e 'limit' devem ser números inteiros.\"}");
-        return;
+            return;
         }
 
         if (limit < 0 || limit > 50) {
             resp.setStatus(400);
-             resp.getWriter().write("{\"status\": 400, \"error\": \"Bad Request\", \"message\": \"O parâmetro 'limit' deve ser um número inteiro entre 0 e 50.\"}");
+            resp.getWriter().write("{\"status\": 400, \"error\": \"Bad Request\", \"message\": \"O parâmetro 'limit' deve ser um número inteiro entre 0 e 50.\"}");
             return;
         }
 
@@ -74,19 +79,19 @@ public class B extends HttpServlet {
                 if (status.equals("Dead")) {
                     mortos++;
 
-                        if(species.equals("Alien")) {
-                            HttpRequest request_name = HttpRequest.newBuilder()
-                            .uri(URI.create(url))
-                            .GET()
-                            .build();
+                    if (species.equals("Alien")) {
+                        HttpRequest request_name = HttpRequest.newBuilder()
+                                .uri(URI.create(url))
+                                .GET()
+                                .build();
 
-                    HttpResponse<String> response_name = client.send(request_name, HttpResponse.BodyHandlers.ofString());
-                    JsonNode jsonNode2 = mapper.readTree(response_name.body());
-                    String name = jsonNode2.get("name").asText();
-                    if (showAlerts) {
-                    resp.getWriter().write("[ALERTA FORENSE] O último registo do alien morto foi no episódio: " + name + ".<br>");
-                }
-                }
+                        HttpResponse<String> response_name = client.send(request_name, HttpResponse.BodyHandlers.ofString());
+                        JsonNode jsonNode2 = mapper.readTree(response_name.body());
+                        String name = jsonNode2.get("name").asText();
+                        if (showAlerts) {
+                            resp.getWriter().write("[ALERTA FORENSE] O último registo do alien morto foi no episódio: " + name + ".<br>");
+                        }
+                    }
 
                 } else if (status.equals("Alive")) {
                     vivos++;
@@ -96,10 +101,14 @@ public class B extends HttpServlet {
             resp.getWriter().write("Vivos: " + vivos + "<br>");
             resp.getWriter().write("Mortos: " + mortos + "<br>");
 
+            String timestamp = LocalDateTime.now().toString();
+            String logLine = "[" + timestamp + "] Servlet /census executado com sucesso." + System.lineSeparator();
+            Files.writeString(Path.of("citadela_audit.log"), logLine, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new ServletException("Pedido interrompido", e);
         }
     }
-    
+
 }

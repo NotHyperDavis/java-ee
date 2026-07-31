@@ -20,11 +20,16 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 
-@WebServlet("/census")
-public class B extends HttpServlet {
+import jakarta.ws.rs.ApplicationPath;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.core.Context;
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+public class B {
+
+    @GET
+    public void doGet(@Context HttpServletRequest req, @Context HttpServletResponse resp) throws Exception {
         resp.setContentType("text/html;charset=UTF-8");
         HttpClient client = HttpClient.newHttpClient();
         ObjectMapper mapper = new ObjectMapper();
@@ -71,6 +76,9 @@ public class B extends HttpServlet {
                         .build();
 
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                if (response.statusCode() != 200) {
+                continue;
+                }
                 JsonNode jsonNode = mapper.readTree(response.body());
                 String status = jsonNode.get("status").asText();
                 String url = jsonNode.get("episode").get(0).asText();
@@ -86,6 +94,11 @@ public class B extends HttpServlet {
                                 .build();
 
                         HttpResponse<String> response_name = client.send(request_name, HttpResponse.BodyHandlers.ofString());
+                        if (response_name.statusCode() != 200) {
+                        continue;
+                        }
+                        
+
                         JsonNode jsonNode2 = mapper.readTree(response_name.body());
                         String name = jsonNode2.get("name").asText();
                         if (showAlerts) {
@@ -103,7 +116,7 @@ public class B extends HttpServlet {
 
             String timestamp = LocalDateTime.now().toString();
             String logLine = "[" + timestamp + "] Servlet /census executado com sucesso." + System.lineSeparator();
-            Files.writeString(Path.of("citadela_audit.log"), logLine, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            Files.writeString(java.nio.file.Path.of("citadela_audit.log"), logLine, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
